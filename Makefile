@@ -27,7 +27,7 @@ build: build-start $(.DEPENDENCIES)
 install: build
 	@test -d "$(PREFIX)" &&\
 		mkdir -p "$(PREFIX)/$(NAME)" &&\
-		cp -r $(PACKAGE_DIR) "$(PREFIX)/$(NAME)/$(PACKAGE_NAME)" &&\
+		cp -r $(PACKAGE_DIR) "$(PREFIX)/$(NAME)/" &&\
 		echo "Installed docset at path:\n  $(PREFIX)/$(NAME)"
 
 clean:
@@ -55,7 +55,8 @@ $(CONTENTS_DIR)/Info.plist: | $(CONTENTS_DIR)
 	@curl -s $(DASH_PLIST_URL) |\
 		perl -0pe 's/(\t<key>CFBundleIdentifier<\/key>\n\t<string>)jQuery(<\/string>)/\1aws-sdk\2/' |\
 		perl -0pe 's/(\t<key>CFBundleName<\/key>\n\t<string>)jQuery(<\/string>)/\1AWS SDK for Node.js\2/' |\
-		perl -0pe 's/(\t<key>DocSetPlatformFamily<\/key>\n\t<string>)jQuery(<\/string>)/\1nodejs\2/' \
+		perl -0pe 's/(\t<key>DocSetPlatformFamily<\/key>\n\t<string>)jQuery(<\/string>)/\1nodejs\2/' |\
+		perl -0pe 's/(<\/dict>\n<\/plist>)/\t<key>dashIndexFilePath<\/key>\n\t<string>DynamoDB_20111205.html<\/string>\n\1/' \
 			> $(CONTENTS_DIR)/Info.plist &&\
 		echo "Downloaded and populated property list file:\n  $(CONTENTS_DIR)/Info.plist"
 
@@ -73,6 +74,7 @@ DDB_CSS_BASEURL := http://docs.aws.amazon.com/AWSJavaScriptSDK/latest/css
 $(DOCUMENTS_DIR)/DynamoDB_20111205.html: $(DOCUMENTS_DIR)/*.css
 	@curl -s $(DDB_20111205_URL) |\
 		perl -pe 's/href="..\/css\//href="/g' |\
+		perl -pe 's/ href="..\/_index\.html"//g' |\
 		perl -pe 's/ href="(?:..\/)?(?:AWS|Service|Endpoint|Request)\.html(?:#[a-zA-Z]+-property)?"//g' |\
 		perl -pe 's/(<div (?:id="search"|class="noframes"))/\1 style="display:none"/g' |\
 		perl -pe 's/<a href="#" class="inheritanceTree">show all<\/a>//' |\
