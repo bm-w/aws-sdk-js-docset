@@ -15,7 +15,7 @@ PREFIX ?= $(HOME)/Library/Application Support/Dash/DocSets
 
 .DEPENDENCIES :=\
 	$(CONTENTS_DIR)/Info.plist\
-	$(DOCUMENTS_DIR)/DynamoDB_20111205.html\
+	$(DOCUMENTS_DIR)/DynamoDB.html\
 	$(RESOURCES_DIR)/docSet.dsidx
 
 build-start:
@@ -56,7 +56,7 @@ $(CONTENTS_DIR)/Info.plist: | $(CONTENTS_DIR)
 		perl -0pe 's/(\t<key>CFBundleIdentifier<\/key>\n\t<string>)jQuery(<\/string>)/\1aws-sdk\2/' |\
 		perl -0pe 's/(\t<key>CFBundleName<\/key>\n\t<string>)jQuery(<\/string>)/\1AWS SDK for Node.js\2/' |\
 		perl -0pe 's/(\t<key>DocSetPlatformFamily<\/key>\n\t<string>)jQuery(<\/string>)/\1nodejs\2/' |\
-		perl -0pe 's/(<\/dict>\n<\/plist>)/\t<key>dashIndexFilePath<\/key>\n\t<string>DynamoDB_20111205.html<\/string>\n\1/' \
+		perl -0pe 's/(<\/dict>\n<\/plist>)/\t<key>dashIndexFilePath<\/key>\n\t<string>DynamoDB.html<\/string>\n\1/' \
 			> $(CONTENTS_DIR)/Info.plist &&\
 		echo "Downloaded and populated property list file:\n  $(CONTENTS_DIR)/Info.plist"
 
@@ -68,10 +68,10 @@ $(DOCUMENTS_DIR)/*.css: | $(DOCUMENTS_DIR)
 		echo "Downloaded documentation CSS:\n  $(DOCUMENTS_DIR)/$$file"; \
 	done
 
-DDB_20111205_URL := http://docs.aws.amazon.com/AWSJavaScriptSDK/latest/AWS/DynamoDB_20111205.html
+DDB_20111205_URL := http://docs.aws.amazon.com/AWSJavaScriptSDK/latest/AWS/DynamoDB.html
 DDB_CSS_BASEURL := http://docs.aws.amazon.com/AWSJavaScriptSDK/latest/css
 
-$(DOCUMENTS_DIR)/DynamoDB_20111205.html: $(DOCUMENTS_DIR)/*.css
+$(DOCUMENTS_DIR)/DynamoDB.html: $(DOCUMENTS_DIR)/*.css
 	@curl -s $(DDB_20111205_URL) |\
 		perl -pe 's/href="..\/css\//href="/g' |\
 		perl -pe 's/ href="..\/_index\.html"//g' |\
@@ -80,22 +80,22 @@ $(DOCUMENTS_DIR)/DynamoDB_20111205.html: $(DOCUMENTS_DIR)/*.css
 		perl -pe 's/<a href="#" class="inheritanceTree">show all<\/a>//' |\
 		perl -pe 's/<small>\(<a href="#" class="summary_toggle">collapse<\/a>\)<\/small>//g' |\
 		perl -0pe 's/<(?:no)?script.+?\/(?:no)?script>//gms' \
-			> $(DOCUMENTS_DIR)/DynamoDB_20111205.html &&\
-		echo "Downloaded and cleaned up DynamoDB documentation HTML:\n  $(DOCUMENTS_DIR)/DynamoDB_20111205.html"
+			> $(DOCUMENTS_DIR)/DynamoDB.html &&\
+		echo "Downloaded and cleaned up DynamoDB documentation HTML:\n  $(DOCUMENTS_DIR)/DynamoDB.html"
 
 # --
 
-$(RESOURCES_DIR)/docSet.dsidx: $(DOCUMENTS_DIR)/DynamoDB_20111205.html | $(RESOURCES_DIR)
+$(RESOURCES_DIR)/docSet.dsidx: $(DOCUMENTS_DIR)/DynamoDB.html | $(RESOURCES_DIR)
 	@sqlite3 $(RESOURCES_DIR)/docSet.dsidx '\
 		CREATE TABLE searchIndex(id INTEGER PRIMARY KEY, name TEXT, type TEXT, path TEXT);\
 		CREATE UNIQUE INDEX anchor ON searchIndex (name, type, path);' &&\
 		echo "Created search index database:\n  $(RESOURCES_DIR)/docSet.dsidx\nPopulating..."
-	@grep -q 'id="endpoint-property"' $(DOCUMENTS_DIR)/DynamoDB_20111205.html &&\
+	@grep -q 'id="endpoint-property"' $(DOCUMENTS_DIR)/DynamoDB.html &&\
 		sqlite3 $(RESOURCES_DIR)/docSet.dsidx \
-			"INSERT OR IGNORE INTO searchIndex(name, type, path) VALUES ('ddb.endpoint', 'Property', 'DynamoDB_20111205.html#endpoint-property');" &&\
-		echo "  (Property) ddb.endpoint: 'DynamoDB_20111205.html#endpoint-property'"
-	@for method in `cat $(DOCUMENTS_DIR)/DynamoDB_20111205.html | perl -wnE 'say for /id="((?!endpoint)\w+)-property"/g'`; do \
+			"INSERT OR IGNORE INTO searchIndex(name, type, path) VALUES ('ddb.endpoint', 'Property', 'DynamoDB.html#endpoint-property');" &&\
+		echo "  (Property) ddb.endpoint: 'DynamoDB.html#endpoint-property'"
+	@for method in `cat $(DOCUMENTS_DIR)/DynamoDB.html | perl -wnE 'say for /id="((?!endpoint)\w+)-property"/g'`; do \
 		sqlite3 $(RESOURCES_DIR)/docSet.dsidx \
-			"INSERT OR IGNORE INTO searchIndex(name, type, path) VALUES ('ddb.$${method}', 'Method', 'DynamoDB_20111205.html#$${method}-property');" &&\
-		echo "  (Method) ddb.$${method}: 'DynamoDB_20111205.html#$${method}-property'"; \
+			"INSERT OR IGNORE INTO searchIndex(name, type, path) VALUES ('ddb.$${method}', 'Method', 'DynamoDB.html#$${method}-property');" &&\
+		echo "  (Method) ddb.$${method}: 'DynamoDB.html#$${method}-property'"; \
 	done
