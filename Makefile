@@ -1,5 +1,6 @@
 FILE := $(dir $(lastword $(MAKEFILE_LIST)))
 DIR := $(FILE:/=)
+SRC_DIR := $(DIR)/src
 
 NAME := AWSSDKNodeJS
 PACKAGE_NAME := $(NAME).docset
@@ -51,8 +52,8 @@ $(DOCUMENTS_DIR): | $(RESOURCES_DIR)
 
 # --
 
-$(PACKAGE_DIR)/icon.png: $(DIR)/icon.png $(DIR)/icon@2x.png  | $(PACKAGE_DIR)
-	@tiffutil -cathidpicheck $(DIR)/icon.png $(DIR)/icon@2x.png -out $(PACKAGE_DIR)/icon.png 2>/dev/null &&\
+$(PACKAGE_DIR)/icon.png: $(SRC_DIR)/icon.png $(SRC_DIR)/icon@2x.png  | $(PACKAGE_DIR)
+	@tiffutil -cathidpicheck $(SRC_DIR)/icon.png $(SRC_DIR)/icon@2x.png -out $(PACKAGE_DIR)/icon.png 2>/dev/null &&\
 	 echo "Generated multi-resolution TIFF icon:\n  $(PACKAGE_DIR)/icon.png"
 
 # --
