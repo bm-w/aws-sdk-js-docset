@@ -71,6 +71,8 @@ $(CONTENTS_DIR)/Info.plist: | $(CONTENTS_DIR)
 
 # --
 
+DDB_CSS_BASEURL := http://docs.aws.amazon.com/AWSJavaScriptSDK/latest/css
+
 $(DOCUMENTS_DIR)/*.css: | $(DOCUMENTS_DIR)
 	@cd $(DOCUMENTS_DIR) && for file in style.css common.css; do \
 		curl -sO $(DDB_CSS_BASEURL)/$$file &&\
@@ -78,10 +80,11 @@ $(DOCUMENTS_DIR)/*.css: | $(DOCUMENTS_DIR)
 	done
 
 DDB_20111205_URL := http://docs.aws.amazon.com/AWSJavaScriptSDK/latest/AWS/DynamoDB.html
-DDB_CSS_BASEURL := http://docs.aws.amazon.com/AWSJavaScriptSDK/latest/css
 
 $(DOCUMENTS_DIR)/DynamoDB.html: $(DOCUMENTS_DIR)/*.css
 	@curl -s $(DDB_20111205_URL) |\
+		perl -pe 's/(id="endpoint-property".*?>)/\1<a name="\/\/apple_ref\/cpp\/Property\/endpoint" class="dashAnchor" \/>/g' |\
+		perl -pe 's/(id="((?!endpoint)\w+)-property".*?>)/\1<a name="\/\/apple_ref\/cpp\/Method\/\2" class="dashAnchor" \/>/g' |\
 		perl -pe 's/href="..\/css\//href="/g' |\
 		perl -pe 's/ href="..\/_index\.html"//g' |\
 		perl -pe 's/ href="(?:..\/)?(?:AWS|Service|Endpoint|Request)\.html(?:#[a-zA-Z]+-property)?"//g' |\
