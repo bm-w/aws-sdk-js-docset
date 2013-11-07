@@ -14,6 +14,7 @@ PREFIX ?= $(HOME)/Library/Application Support/Dash/DocSets
 .PHONY: build build-start install clean
 
 .DEPENDENCIES :=\
+	$(PACKAGE_DIR)/icon.png \
 	$(CONTENTS_DIR)/Info.plist\
 	$(DOCUMENTS_DIR)/DynamoDB.html\
 	$(RESOURCES_DIR)/docSet.dsidx
@@ -46,6 +47,13 @@ $(RESOURCES_DIR): | $(CONTENTS_DIR)
 
 $(DOCUMENTS_DIR): | $(RESOURCES_DIR)
 	@mkdir -p $(DOCUMENTS_DIR)
+
+
+# --
+
+$(PACKAGE_DIR)/icon.png: $(DIR)/icon.png $(DIR)/icon@2x.png  | $(PACKAGE_DIR)
+	@tiffutil -cathidpicheck $(DIR)/icon.png $(DIR)/icon@2x.png -out $(PACKAGE_DIR)/icon.png 2>/dev/null &&\
+	 echo "Generated multi-resolution TIFF icon:\n  $(PACKAGE_DIR)/icon.png"
 
 # --
 
