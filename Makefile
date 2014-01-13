@@ -14,11 +14,6 @@ PREFIX ?= $(HOME)/Library/Application Support/Dash/DocSets
 
 .PHONY: build build-start install clean
 
-debug:
-	@for PAIR in "ddb DynamoDB" "sqs SQS"; do \
-		set -- $$PAIR; PREFIX=$$1; TITLE=$$2;\
-	done
-
 .DEPENDENCIES :=\
 	$(PACKAGE_DIR)/icon.png \
 	$(CONTENTS_DIR)/Info.plist\
@@ -84,8 +79,6 @@ $(DOCUMENTS_DIR)/*.css: | $(DOCUMENTS_DIR)
 		curl -sO $(DDB_CSS_BASEURL)/$$file &&\
 		echo "Downloaded documentation CSS:\n  $(DOCUMENTS_DIR)/$$file"; \
 	done
-
-FOO := "foo#bar"
 
 $(DOCUMENTS_DIR)/Index.html: $(DOCUMENTS_DIR)/*.css
 	cp $(SRC_DIR)/Index.html $(DOCUMENTS_DIR)/Index.html
