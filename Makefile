@@ -19,6 +19,7 @@ PREFIX ?= $(HOME)/Library/Application Support/Dash/DocSets
 	$(CONTENTS_DIR)/Info.plist\
 	$(DOCUMENTS_DIR)/DynamoDB.html\
 	$(DOCUMENTS_DIR)/SQS.html\
+	$(DOCUMENTS_DIR)/CloudSearch.html\
 	$(RESOURCES_DIR)/docSet.dsidx
 
 build-start:
@@ -105,16 +106,22 @@ SQS_20121105_URL := http://docs.aws.amazon.com/AWSJavaScriptSDK/latest/AWS/SQS.h
 $(DOCUMENTS_DIR)/SQS.html: $(DOCUMENTS_DIR)/Index.html
 	@curl -s $(SQS_20121105_URL) | $(PERL_COMMANDS) > $(DOCUMENTS_DIR)/SQS.html &&\
 		echo "Downloaded and cleaned up SQS documentation HTML:\n  $(DOCUMENTS_DIR)/SQS.html"
-		
-	
+
+CS_20110201_URL := http://docs.aws.amazon.com/AWSJavaScriptSDK/latest/AWS/CloudSearch.html
+
+$(DOCUMENTS_DIR)/CloudSearch.html: $(DOCUMENTS_DIR)/Index.html
+	@curl -s $(CS_20110201_URL) | $(PERL_COMMANDS) > $(DOCUMENTS_DIR)/CloudSearch.html &&\
+		echo "Downloaded and cleaned up CloudSearch documentation HTML:\n  $(DOCUMENTS_DIR)/CloudSearch.html"
+
+
 # --
 
-$(RESOURCES_DIR)/docSet.dsidx: $(DOCUMENTS_DIR)/DynamoDB.html $(DOCUMENTS_DIR)/SQS.html | $(RESOURCES_DIR)
+$(RESOURCES_DIR)/docSet.dsidx: $(DOCUMENTS_DIR)/DynamoDB.html $(DOCUMENTS_DIR)/SQS.html $(DOCUMENTS_DIR)/CloudSearch.html | $(RESOURCES_DIR)
 	@sqlite3 $(RESOURCES_DIR)/docSet.dsidx '\
 		CREATE TABLE searchIndex(id INTEGER PRIMARY KEY, name TEXT, type TEXT, path TEXT);\
 		CREATE UNIQUE INDEX anchor ON searchIndex (name, type, path);' &&\
 		echo "Created search index database:\n  $(RESOURCES_DIR)/docSet.dsidx\nPopulating..."
-	@for PAIR in "ddb DynamoDB" "sqs SQS"; do \
+	@for PAIR in "ddb DynamoDB" "sqs SQS" "cs CloudSearch"; do \
 		set -- $$PAIR; PREFIX=$$1; TITLE=$$2;\
 		grep -q 'id="endpoint-property"' $(DOCUMENTS_DIR)/$${TITLE}.html &&\
 			sqlite3 $(RESOURCES_DIR)/docSet.dsidx \
